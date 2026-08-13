@@ -1,0 +1,40 @@
+{
+  "name": "voicecan-studio",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.19.0 <25"
+  },
+  "workspaces": ["studio"],
+  "scripts": {
+    "build": "tsc -b --clean && tsc -b",
+    "typecheck": "tsc -b --pretty false",
+    "test": "npm run build && node --test studio/test/*.test.js test/*.test.js",
+    "check:boundaries": "node scripts/check-demo-boundaries.mjs",
+    "check:architecture": "node scripts/check-architecture.mjs",
+    "check:public-release": "node scripts/check-public-release.mjs",
+    "verify:sdk": "npm run verify:sdk --workspace @voicecan-demo/studio",
+    "catalog:capabilities": "node scripts/capability-catalog.mjs",
+    "generate:capability": "node scripts/generate-capability.mjs",
+    "generate:scenario": "node scripts/generate-scenario.mjs",
+    "generate:processor": "node scripts/generate-processor.mjs",
+    "generate:integration": "node scripts/generate-integration.mjs",
+    "context:ai": "node scripts/context-ai.mjs",
+    "verify:change": "node scripts/verify-change.mjs",
+    "doctor": "node studio/dist/doctor.js",
+    "ci": "npm run verify:sdk && npm run check:boundaries && npm run check:architecture && npm run catalog:capabilities -- --check && npm test",
+    "setup:audio:linux": "bash scripts/install-audio-tools.sh",
+    "setup:audio:windows": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/install-audio-tools.ps1",
+    "dev:external": "tsx watch studio/src/main-external.ts",
+    "dev:local-full": "tsx watch studio/src/main-local.ts",
+    "start:external": "node studio/dist/main-external.js",
+    "start:local-full": "node studio/dist/main-local.js"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "tsx": "^4.20.6",
+    "typescript": "^6.0.2"
+  }
+}

@@ -1,0 +1,35 @@
+services:
+  studio-local-full:
+    build:
+      context: ./studio
+      dockerfile: Dockerfile.local
+    env_file:
+      - studio/.env
+    environment:
+      LOCAL_PROCESSOR_MODE: local
+      LOCAL_ASR_PYTHON: /app/local-asr/.venv/bin/python
+      LOCAL_ASR_WORKER: /app/local-asr/worker.py
+      LOCAL_ASR_MODEL_PATH: /models/model
+      LOCAL_SUMMARY_PYTHON: /app/local-summary/.venv/bin/python
+      LOCAL_SUMMARY_WORKER: /app/local-summary/worker.py
+      LOCAL_SUMMARY_MODEL_PATH: /models/summary
+      NOTIFICATION_ENABLED: "false"
+      LOCAL_ASR_DEVICE: cpu
+      LOCAL_ASR_COMPUTE_TYPE: int8
+      DEMO_DATABASE_PATH: /data/jobs.sqlite
+      DEMO_WORK_DIR: /data/work
+      HOST: 0.0.0.0
+      PORT: "8815"
+    ports:
+      - "127.0.0.1:8815:8815"
+    volumes:
+      - ./models/faster-whisper-small:/models/model:ro
+      - ./models/qwen3-4b-q4-k-m:/models/summary:ro
+      - studio-local-full-data:/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    restart: unless-stopped
+
+volumes:
+  studio-local-full-data:

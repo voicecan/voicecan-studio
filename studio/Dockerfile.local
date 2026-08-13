@@ -1,0 +1,50 @@
+FROM node:24.19.0-bookworm-slim AS node-build
+
+WORKDIR /workspace
+COPY package.json package-lock.json tsconfig.json ./
+COPY vendor vendor
+RUN npm ci --ignore-scripts
+
+COPY src src
+RUN npm run build
+
+FROM ghcr.io/astral-sh/uv:0.10.2 AS uv-runtime
+
+FROM node:24.19.0-bookworm-slim
+ARG FFMPEG_APT_VERSION=7:5.1.9-0+deb12u1
+ARG LIBLC3_TOOLS_APT_VERSION=1.0.1-1+b1
+ENV NODE_ENV=production \
+    LOCAL_ASR_PYTHON=/app/local-asr/.venv/bin/python \
+    LOCAL_ASR_WORKER=/app/local-asr/worker.py \
+    LOCAL_ASR_MODEL_PATH=/models/model \
+    LOCAL_SUMMARY_PYTHON=/app/local-summary/.venv/bin/python \
+    LOCAL_SUMMARY_WORKER=/app/local-summary/worker.py \
+    LOCAL_SUMMARY_MODEL_PATH=/models/summary \
+    NOTIFICATION_ENABLED=false \
+    AUDIO_TOOLS_SHA256_MANIFEST=/usr/local/share/voicecan/audio-tools.sha256 \
+    DEMO_DATABASE_PATH=/data/jobs.sqlite \
+    DEMO_WORK_DIR=/data/work \
+    HOST=0.0.0.0 \
+    PORT=8815
+
+COPY --from=uv-runtime /uv /uvx /bin/
+COPY scripts/install-audio-tools.sh /tmp/install-audio-tools.sh
+RUN FFMPEG_APT_VERSION="$FFMPEG_APT_VERSION" LIBLC3_TOOLS_APT_VERSION="$LIBLC3_TOOLS_APT_VERSION" bash /tmp/install-audio-tools.sh \
+    && rm -f /tmp/install-audio-tools.sh
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3 ca-certificates libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY --from=node-build --chown=node:node /workspace /app
+COPY --chown=node:node local-asr/pyproject.toml local-asr/uv.lock local-asr/worker.py local-asr/register_model.py /app/local-asr/
+COPY --chown=node:node local-summary/pyproject.toml local-summary/uv.lock local-summary/worker.py local-summary/register_model.py scripts/install-local-summary-model.py /app/local-summary/
+RUN uv sync --project /app/local-asr --frozen --no-dev --python python3 \
+    && uv sync --project /app/local-summary --frozen --no-dev --python python3 \
+    && mkdir -p /data /models/model /models/summary \
+    && chown -R node:node /data /models /app/local-asr /app/local-summary
+
+USER node
+VOLUME ["/data", "/models/model", "/models/summary"]
+EXPOSE 8815
+ENTRYPOINT ["node", "dist/main-local.js"]

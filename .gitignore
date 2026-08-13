@@ -1,0 +1,40 @@
+# Dependencies and generated build output
+node_modules/
+dist/
+*.tsbuildinfo
+coverage/
+.venv/
+__pycache__/
+*.pyc
+
+# Local configuration and credentials
+.env
+.env.local
+.env.*.local
+!.env.example
+*.pem
+*.key
+
+# Runtime state and sensitive media
+data/
+work/
+models/
+.runtime/
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.wav
+*.mp3
+*.m4a
+*.aac
+*.flac
+*.ogg
+
+# Logs, process files, and editor metadata
+*.log
+*.pid
+*.tmp
+.DS_Store
+.idea/
+.vscode/

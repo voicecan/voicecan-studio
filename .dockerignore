@@ -1,0 +1,11 @@
+.git
+node_modules
+**/dist
+data
+work
+models
+**/.venv
+**/__pycache__
+*.sqlite
+*.sqlite-*
+docs

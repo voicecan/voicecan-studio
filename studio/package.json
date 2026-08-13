@@ -1,0 +1,49 @@
+{
+  "name": "@voicecan-demo/studio",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.19.0 <25"
+  },
+  "main": "dist/main-external.js",
+  "exports": {
+    ".": "./dist/main-external.js",
+    "./external": "./dist/main-external.js",
+    "./local": "./dist/main-local.js",
+    "./service": "./dist/service.js",
+    "./audio-pipeline": "./dist/audio-pipeline.js",
+    "./runtime": "./dist/runtime.js",
+    "./local-asr-processor": "./dist/local-asr-processor.js",
+    "./local-summary-processor": "./dist/local-summary-processor.js",
+    "./summary-processor": "./dist/summary-processor.js",
+    "./notification-provider": "./dist/notification-provider.js"
+  },
+  "scripts": {
+    "build": "tsc -b --clean && tsc -b",
+    "typecheck": "tsc -b --pretty false",
+    "verify:sdk": "node scripts/verify-sdk-artifacts.mjs",
+    "test": "npm run verify:sdk && npm run build && node --test test/*.test.js",
+    "setup:audio:linux": "bash scripts/install-audio-tools.sh",
+    "setup:audio:windows": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/install-audio-tools.ps1",
+    "setup:local:windows": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup-local-windows.ps1",
+    "start:local:windows": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-local-windows.ps1",
+    "setup:local:linux": "bash scripts/setup-local-linux.sh",
+    "start:local:linux": "bash scripts/run-local-linux.sh",
+    "dev:external": "tsx watch src/main-external.ts",
+    "dev:local": "tsx watch src/main-local.ts",
+    "start:external": "node dist/main-external.js",
+    "start:local": "node dist/main-local.js"
+  },
+  "dependencies": {
+    "@trycourier/courier": "7.25.0",
+    "@voicecan/contracts": "file:vendor/voicecan-contracts-0.1.0-preview.2.tgz",
+    "@voicecan/server-client": "file:vendor/voicecan-server-client-0.1.0-preview.2.tgz"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "tsx": "^4.20.6",
+    "typescript": "^6.0.2"
+  }
+}

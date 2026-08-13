@@ -1,0 +1,24 @@
+services:
+  studio-external:
+    build:
+      context: ./studio
+      dockerfile: Dockerfile
+    env_file:
+      - studio/.env
+    environment:
+      DEMO_DATABASE_PATH: /data/studio.sqlite
+      DEMO_CONFIG_PATH: /data/config.json
+      DEMO_WORK_DIR: /data/work
+      HOST: 0.0.0.0
+      PORT: "8811"
+    ports:
+      - "127.0.0.1:8811:8811"
+    volumes:
+      - studio-external-data:/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    restart: unless-stopped
+
+volumes:
+  studio-external-data:

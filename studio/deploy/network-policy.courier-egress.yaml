@@ -1,0 +1,13 @@
+# Apply this additive policy only after NOTIFICATION_ENABLED=true is reviewed.
+# Replace the ipBlock with Courier's current documented egress destination for
+# your environment; Kubernetes NetworkPolicy cannot select a DNS name safely.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: voicecan-studio-courier-egress
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: voicecan-studio-local-full
+  policyTypes: [Egress]
+  egress: []
