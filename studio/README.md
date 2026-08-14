@@ -1,4 +1,4 @@
-# VoiceCan Studio application
+# Voicecan Studio application
 
 本目录是仓库中唯一的应用。External 与 Local Full 是同一应用的两个部署配置：
 

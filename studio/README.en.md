@@ -1,6 +1,6 @@
-# VoiceCan Studio
+# Voicecan Studio
 
-This directory contains the repository's only application. External and Local Full are deployment profiles of the same VoiceCan Studio codebase:
+This directory contains the repository's only application. External and Local Full are deployment profiles of the same Voicecan Studio codebase:
 
 ```text
 Recording → Audio → Transcript Revision → Summary Revision → Confirmation → Delivery

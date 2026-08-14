@@ -1,4 +1,4 @@
-# VoiceCan Studio 运行手册
+# Voicecan Studio 运行手册
 
 ## 1. 选择档位
 
@@ -7,7 +7,7 @@
 | External | HTTP ASR + HTTP Summary | Courier，可选 | 8811 |
 | Local Full | 本地 Faster-Whisper + 本地 Qwen3-4B GGUF | 默认关闭，可显式启用 | 8815 |
 
-两个档位都必须连接真实 VoiceCan Device Platform。生产入口不提供模拟 Platform、模拟录音或 Fixture Processor。
+两个档位都必须连接真实 Voicecan Device Platform。生产入口不提供模拟 Platform、模拟录音或 Fixture Processor。
 
 ## 2. External
 

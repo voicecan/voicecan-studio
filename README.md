@@ -1,35 +1,37 @@
-# VoiceCan Studio
+# Voicecan Studio
 
-VoiceCan Studio 是一个可独立部署、可直接扩展的 Device Platform 场景应用示例。仓库中只有这一个 Demo，并提供两种部署配置：
+[中文](README.zh-CN.md)
+
+Voicecan Studio is an independently deployable and directly extensible example application built on Device Platform. This repository contains one demo application with two deployment profiles:
 
 ```text
 Authorized Recording → Processor Stages → Traceable Artifacts → Scenario Pack → Human Review → Action Intent
 ```
 
-Device Platform 负责设备、录音、授权和下载；Studio 不重复建设这些管理能力。Studio 从授权 Recording 开始，完成处理、场景投影、人工审核、动作预览和 Courier 执行。一条 Recording 只下载和转写一次；上游 Revision 变化会让下游结果失效并阻止执行。
+Device Platform owns devices, recordings, authorization, and downloads; Studio does not duplicate those management capabilities. Starting from an authorized Recording, Studio performs processing, scenario projection, human review, action preview, and Courier execution. Each Recording is downloaded and transcribed only once. An upstream Revision change makes downstream results stale and prevents execution.
 
-> 当前状态：首次公开发布候选。正式公开前必须完成 [公开发布检查表](docs/PUBLIC_RELEASE_CHECKLIST.md)，尤其是补充仓库许可证及两个 VoiceCan SDK 制品的许可证文件。
+> Status: first public release candidate. Before the official public release, complete the [public release checklist](docs/PUBLIC_RELEASE_CHECKLIST.md), especially the repository license and license files for both Voicecan SDK artifacts.
 
-## 两种发行档位
+## Deployment profiles
 
-| 档位 | 模型处理 | 通知出口 | 默认端口 |
+| Profile | Model processing | Notification output | Default port |
 | --- | --- | --- | ---: |
-| External | HTTP ASR + HTTP Summary Processor | Courier，可选 | `8811` |
-| Local Full | 内嵌 Faster-Whisper + 内嵌 Qwen3-4B GGUF Worker | 默认关闭；可显式启用 Courier | `8815` |
+| External | HTTP ASR + HTTP Summary Processor | Optional Courier | `8811` |
+| Local Full | Embedded Faster-Whisper + embedded Qwen3-4B GGUF Worker | Disabled by default; Courier can be enabled explicitly | `8815` |
 
-两个档位共享同一套场景模型、Web UI 和 API，只在 Composition Root 选择不同的 Processor。生产入口不包含 Fixture Processor。
+Both profiles share the same scenario model, Web UI, and API. They differ only in the Processor selected by the Composition Root. Production entrypoints never include Fixture Processors.
 
-## 内置可执行场景
+## Built-in executable scenarios
 
-| Scenario Pack | 默认 Recording attribute | 产出 |
+| Scenario Pack | Default Recording attribute | Output |
 | --- | ---: | --- |
-| Voice Inbox | `0` | 备忘分类、标签、任务和后续动作 |
-| Field Report | `1` | 现场发现、严重度、跟进标记和处置建议 |
-| Meeting / Interview | `2` | 带原文引用的议题、决策和行动项 |
+| Voice Inbox | `0` | Memo classification, tags, tasks, and follow-up actions |
+| Field Report | `1` | Field findings, severity, follow-up flags, and recommended actions |
+| Meeting / Interview | `2` | Topics, decisions, and action items with source references |
 
-场景可以随时切换而不重新下载或转写。每次投影、编辑和审核都有 Revision；动作必须先生成预览，再由操作者显式确认执行。
+Scenarios can be switched at any time without downloading or transcribing the Recording again. Every projection, edit, and review has a Revision. Actions must first produce a preview and then be explicitly confirmed by an operator.
 
-## 快速开始
+## Quickstart
 
 ```bash
 npm ci
@@ -37,9 +39,9 @@ npm run build
 npm run start:external
 ```
 
-要求 Node.js `24.19.0` 或更新的 24.x 版本。首次启动 External 且配置缺失时，打开 `http://127.0.0.1:8811`，在 Setup 页面配置 Device Platform、ASR、Summary 和可选 Courier。配置会先验证，再以权限 `0600` 原子写入。
+Node.js `24.19.0` or a newer 24.x release is required. When External starts without configuration for the first time, open `http://127.0.0.1:8811` and configure Device Platform, ASR, Summary, and optional Courier on the Setup page. Configuration is validated before being written atomically with `0600` permissions.
 
-Local Full：
+Local Full on Linux:
 
 ```bash
 cd studio
@@ -47,51 +49,51 @@ bash scripts/setup-local-linux.sh
 bash scripts/run-local-linux.sh
 ```
 
-Windows 使用 `scripts/setup-local-windows.ps1` 和 `scripts/run-local-windows.ps1`。安装器准备 Node、uv、FFmpeg、liblc3、固定 ASR 模型以及固定的 `Qwen/Qwen3-4B-GGUF@34778e…` Q4_K_M Summary 模型；模型安装后按大小和 SHA-256 校验。Local Full 最低基线为 8 GiB RAM、4 GiB Summary 模型可用磁盘，实际长录音建议 16 GiB RAM。
+On Windows, use `scripts/setup-local-windows.ps1` and `scripts/run-local-windows.ps1`. The installer prepares Node, uv, FFmpeg, liblc3, a pinned ASR model, and the pinned `Qwen/Qwen3-4B-GGUF@34778e…` Q4_K_M Summary model. Installed models are verified by size and SHA-256. Local Full requires at least 8 GiB RAM and 4 GiB of available disk space for the Summary model; 16 GiB RAM is recommended for long recordings.
 
-Docker：
+Docker:
 
 ```bash
 docker compose -f compose.external.yml up --build
 docker compose -f compose.local-full.yml up --build
 ```
 
-完整安装和运维说明见 [运行手册](studio/RUNBOOK.zh-CN.md)。架构、扩展点和边界见 [架构说明](docs/ARCHITECTURE.md)。
+See the [operations runbook](studio/RUNBOOK.zh-CN.md) for complete installation and operations guidance. See the [architecture guide](docs/ARCHITECTURE.md) for architecture, extension points, and boundaries.
 
-## 动作执行与多渠道
+## Action execution and multiple channels
 
-Studio 固定使用 Courier 官方 Node SDK `@trycourier/courier@7.25.0`。Studio 只管理 Action Intent、发送预览、幂等提交和 Provider 状态同步；email、SMS、push、chat、inbox 的 Integration、Template、Routing、Preference、重试和日志由 Courier 管理。仓库不实现逐渠道 Transport 或 Adapter。
+Studio uses the official Courier Node SDK, `@trycourier/courier@7.25.0`. Studio manages only Action Intents, delivery previews, idempotent submission, and Provider status synchronization. Courier owns email, SMS, push, chat, and inbox Integrations, Templates, Routing, Preferences, retries, and logs. This repository does not implement per-channel Transports or Adapters.
 
-执行前必须人工确认当前 Scenario Revision。默认 Payload 不包含音频、下载 URL 或完整 Transcript。Local Full 的 `NOTIFICATION_ENABLED=false` 为默认值；严格零外联环境仍可审核、预览和导出 Markdown。
+The current Scenario Revision must be confirmed by a human before execution. Default Payloads do not contain audio, download URLs, or full Transcripts. Local Full defaults to `NOTIFICATION_ENABLED=false`; strictly offline environments can still review, preview, and export Markdown.
 
-## 常用命令
+## Common commands
 
-| 命令 | 用途 |
+| Command | Purpose |
 | --- | --- |
-| `npm run dev:external` | External 开发入口 |
-| `npm run dev:local-full` | Local Full 开发入口 |
+| `npm run dev:external` | External development entrypoint |
+| `npm run dev:local-full` | Local Full development entrypoint |
 | `npm run doctor` | CLI Doctor |
-| `npm run verify:sdk` | 校验审查过的 Device Platform SDK 制品 |
-| `npm run check:boundaries` | 检查私有 Core、Fixture 和渠道边界 |
-| `npm run check:architecture` | 检查 Capability 分层依赖 |
-| `npm run ci` | 完整构建和测试门禁 |
-| `npm run generate:scenario -- --name <id> --title <title>` | 生成并注册 Scenario Pack |
-| `npm run generate:processor -- --name <id> --kind asr\|summary` | 生成 Processor 骨架 |
-| `npm run generate:integration -- --name <id> --sdk <package>` | 生成官方 SDK Integration 骨架 |
-| `npm run generate:capability -- --name <id>` | 生成底层内部 Capability 骨架 |
-| `npm run context:ai -- --capability <id>` | 输出 AI 最小安全上下文 |
-| `npm run verify:change -- --capability <id>` | 定向验证改动 |
+| `npm run verify:sdk` | Verify reviewed Device Platform SDK artifacts |
+| `npm run check:boundaries` | Check protocol-runtime, Fixture, and channel boundaries |
+| `npm run check:architecture` | Check Capability-layer dependencies |
+| `npm run ci` | Run the complete build and test gate |
+| `npm run generate:scenario -- --name <id> --title <title>` | Generate and register a Scenario Pack |
+| `npm run generate:processor -- --name <id> --kind asr\|summary` | Generate a Processor skeleton |
+| `npm run generate:integration -- --name <id> --sdk <package>` | Generate an official-SDK Integration skeleton |
+| `npm run generate:capability -- --name <id>` | Generate an internal Capability skeleton |
+| `npm run context:ai -- --capability <id>` | Print the minimum safe AI context |
+| `npm run verify:change -- --capability <id>` | Verify a targeted change |
 
-## AI 添加或修改功能
+## Adding or changing features with AI
 
-先阅读 [studio/AGENTS.md](studio/AGENTS.md)、[AI Start Here](studio/docs/ai-development/START-HERE.md) 和 [Extension Catalog](studio/docs/ai-development/EXTENSION-CATALOG.md)。面向用户的首选扩展点是 Scenario Pack、Processor Stage 和 Integration；内部 Capability 只承载稳定事务边界。AI 不需要通读仓库，也不得读取 `.env`、真实 SQLite、音频、Transcript 或 Delivery Payload。
+Start with [studio/AGENTS.md](studio/AGENTS.md), [AI Start Here](studio/docs/ai-development/START-HERE.md), and the [Extension Catalog](studio/docs/ai-development/EXTENSION-CATALOG.md). Scenario Packs, Processor Stages, and Integrations are the preferred user-facing extension points; internal Capabilities exist only for stable transaction boundaries. An AI agent does not need to read the entire repository and must not read `.env`, real SQLite databases, audio, Transcripts, or Delivery Payloads.
 
-## 安全边界
+## Security boundaries
 
-- 只通过公开 `@voicecan/server-client` 使用 Device Platform；不访问 Device Core 私有源码、Platform 数据库或对象存储凭证。
-- Application Token、Webhook Secret、Processor/Courier Key、临时 URL、音频和内容不写日志。
-- Download Grant 只在任务取得执行权且 Processor、音频工具、存储健康后创建。
-- 所有写 API 使用 Operator Token；浏览器仅把 Token 保存到当前 Session。
-- 默认监听 `127.0.0.1`。对公网部署前必须使用带认证的 TLS Ingress。
+- Use Device Platform only through the public `@voicecan/server-client`; do not access protocol-runtime internals, Platform databases, or object-storage credentials.
+- Never log Application Tokens, Webhook Secrets, Processor/Courier Keys, temporary URLs, audio, or content.
+- Create a Download Grant only after a task owns execution and its Processor, audio tools, and storage are healthy.
+- All write APIs require an Operator Token; the browser stores it only in the current Session.
+- The default listener is `127.0.0.1`. Use an authenticated TLS Ingress before exposing Studio publicly.
 
-安全问题请按 [SECURITY.md](SECURITY.md) 私下报告；普通问题见 [SUPPORT.md](SUPPORT.md)，参与开发见 [CONTRIBUTING.md](CONTRIBUTING.md)。第三方依赖与待确认授权见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+Report security issues privately through [SECURITY.md](SECURITY.md). See [SUPPORT.md](SUPPORT.md) for general help and [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidance. Third-party dependencies and pending license confirmations are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

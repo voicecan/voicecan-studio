@@ -1,10 +1,10 @@
-# VoiceCan Studio 架构
+# Voicecan Studio 架构
 
 ## 产品边界
 
-VoiceCan Studio 是一个应用，External 与 Local Full 是它的两种 Composition Root。Device Platform 与 Studio 的职责严格分开：
+Voicecan Studio 是一个应用，External 与 Local Full 是它的两种 Composition Root。Device Platform 与 Studio 的职责严格分开：
 
-| Device Platform | VoiceCan Studio |
+| Device Platform | Voicecan Studio |
 | --- | --- |
 | 设备身份、能力、命令与固件 | 从授权 Recording 构建应用结果 |
 | 录音索引、状态、授权与 Download Grant | Processor 编排、Revision 与 Artifact 血缘 |

@@ -1,6 +1,6 @@
-# AGENTS.md — VoiceCan Studio
+# AGENTS.md — Voicecan Studio
 
-VoiceCan Studio is the only application in this repository. Production has two profiles: `external` and `local-full`.
+Voicecan Studio is the only application in this repository. Production has two profiles: `external` and `local-full`.
 
 Read `docs/ai-development/START-HERE.md` and the target Scenario/Processor/Integration recipe before editing. Read a Capability's `AGENTS.md` only when changing that internal transaction boundary.
 

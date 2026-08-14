@@ -31,7 +31,7 @@ for (const name of demos) {
     const source = await readFile(file, 'utf8');
     if (/Fixture(?:Transcription|Summary|Meeting)Processor/.test(source)) failures.push(`${relative(repositoryRoot, file)} contains a production Fixture Processor`);
     if (/SlackAdapter|TeamsAdapter|EmailAdapter|SmsAdapter|SmtpTransport/.test(source)) failures.push(`${relative(repositoryRoot, file)} implements a forbidden channel adapter`);
-    if (source.includes('device-core/')) failures.push(`${relative(repositoryRoot, file)} references Device Core private source`);
+    if (source.includes('device-core/')) failures.push(`${relative(repositoryRoot, file)} references private protocol source`);
     for (const match of source.matchAll(importPattern)) {
       const specifier = match[2];
       if (!specifier?.startsWith('.')) continue;
@@ -46,5 +46,5 @@ if (failures.length > 0) {
   process.stderr.write(`${failures.join('\n')}\n`);
   process.exitCode = 1;
 } else {
-  process.stdout.write('verified the unified Studio source, SDK, channel and private Core boundaries\n');
+  process.stdout.write('verified the unified Studio source, SDK, channel and protocol-runtime boundaries\n');
 }

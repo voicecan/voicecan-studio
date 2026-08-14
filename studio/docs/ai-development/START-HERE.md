@@ -1,6 +1,6 @@
 # AI 开发入口
 
-这份文档让 AI 在不读取真实运行数据的情况下安全扩展 VoiceCan Studio。
+这份文档让 AI 在不读取真实运行数据的情况下安全扩展 Voicecan Studio。
 
 ## 1. 先确定边界
 
@@ -17,7 +17,7 @@ Platform Source → Processor → Artifact → Scenario → Review → Action
 3. 只读取该扩展点列出的代码、Contract 和测试。
 4. 写下输入/输出 Contract、Revision/stale 语义、Secret/网络影响、失败路径和验证命令。
 
-禁止默认读取 `.env`、`data/`、`work/`、`models/`、真实 SQLite、音频、Transcript、Delivery Payload 或 Device Core 私有源码。
+禁止默认读取 `.env`、`data/`、`work/`、`models/`、真实 SQLite、音频、Transcript、Delivery Payload 或私有协议运行时内部实现。
 
 ## 2. 选择最小扩展点
 
