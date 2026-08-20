@@ -1,15 +1,13 @@
-# Voicecan Studio application
+# Voicecan Studio 应用
 
-本目录是仓库中唯一的应用。External 与 Local Full 是同一应用的两个部署配置：
+本目录包含仓库中的 Voicecan Studio 应用。它从 Device Platform 获取授权录音，完成转写、摘要、场景整理、人工审核和动作预览。
 
-```text
-Recording → Audio → Transcript Revision → Summary Revision → Confirmation → Delivery
-```
+Voicecan Studio 提供两个处理档位：
 
-- **External**：真实 Device Platform + HTTP ASR + HTTP Summary；Courier 通知可选。
-- **Local Full**：真实 Device Platform + 内嵌 Faster-Whisper + Qwen3-4B GGUF；Courier 默认关闭。
+- **External**：使用 HTTP ASR 和 Summary 服务，Courier 通知可选。
+- **Local Full**：使用内嵌 Faster-Whisper 和 Qwen3-4B GGUF Worker，Courier 默认关闭。
 
-完整安装、配置、Doctor 和运维步骤见 [RUNBOOK.zh-CN.md](RUNBOOK.zh-CN.md)。仓库入口、发布状态和许可证说明见 [../README.md](../README.md)。
+完整安装与运维步骤见 [RUNBOOK.zh-CN.md](RUNBOOK.zh-CN.md)，产品能力介绍见 [仓库 README](../README.md)。
 
 ## 开发
 
@@ -22,6 +20,4 @@ npm run dev:external
 # 或 npm run dev:local-full
 ```
 
-应用固定使用公开 Device Platform SDK 和 Courier 官方 Node SDK。生产入口不包含 Fixture，也不实现 Slack、Teams、邮件、短信等渠道协议。
-
-需要由 AI 添加或修改能力时，先阅读 [AGENTS.md](AGENTS.md) 和 [docs/ai-development/START-HERE.md](docs/ai-development/START-HERE.md)。
+需要扩展用户工作流时，优先使用 Scenario Pack、Processor Stage 和 Integration。开发说明见 [AI 开发入口](docs/ai-development/START-HERE.md)。

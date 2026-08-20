@@ -1,11 +1,23 @@
 # Voicecan Studio
 
-This directory contains the repository's only application. External and Local Full are deployment profiles of the same Voicecan Studio codebase:
+This directory contains the Voicecan Studio application. It reads authorized recordings from Device Platform and turns them into transcripts, summaries, scenario results, reviews, and action previews.
 
-```text
-Recording → Audio → Transcript Revision → Summary Revision → Confirmation → Delivery
+It provides two processing profiles:
+
+- **External** uses HTTP ASR and Summary services, with optional Courier notifications.
+- **Local Full** uses embedded Faster-Whisper and Qwen3-4B GGUF workers, with Courier disabled by default.
+
+See the [repository README](../README.md) for product capabilities and [RUNBOOK.zh-CN.md](RUNBOOK.zh-CN.md) for installation and operations.
+
+## Development
+
+```bash
+cd ..
+npm ci
+npm run build
+npm run test
+npm run dev:external
+# or npm run dev:local-full
 ```
 
-It ships in two profiles only: **External** (HTTP ASR and Summary processors) and **Local Full** (embedded Faster-Whisper and Qwen3-4B GGUF workers). Courier notification egress is optional and disabled by default in Local Full.
-
-See [README.md](README.md) for development and [RUNBOOK.zh-CN.md](RUNBOOK.zh-CN.md) for the complete operator runbook.
+Use Scenario Packs, Processor Stages, and Integrations when extending user-facing workflows. See [AI development](docs/ai-development/START-HERE.md) for contributor guidance.

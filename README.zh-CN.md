@@ -2,34 +2,41 @@
 
 [English](README.md)
 
-Voicecan Studio 是一个可独立部署、可直接扩展的 Device Platform 场景应用示例。仓库中只有这一个 Demo，并提供两种部署配置：
+Voicecan Studio 是一个自托管语音工作流应用：把经过授权的 Voicecan 录音转换为结构化结果，交给人工审核，并帮助操作者安全地执行后续动作。它连接 [Voicecan Device Platform](https://github.com/voicecan/device-platform)，提供简单的 Web 界面和两种处理档位。
 
 ```text
-Authorized Recording → Processor Stages → Traceable Artifacts → Scenario Pack → Human Review → Action Intent
+Recording → Transcript → Summary → Scenario result → Review → Action
 ```
 
-Device Platform 负责设备、录音、授权和下载；Studio 不重复建设这些管理能力。Studio 从授权 Recording 开始，完成处理、场景投影、人工审核、动作预览和 Courier 执行。一条 Recording 只下载和转写一次；上游 Revision 变化会让下游结果失效并阻止执行。
+## 你可以做什么
 
-## 两种发行档位
+- 一次处理授权录音，并把 Transcript、Summary、Scenario、审核和动作关联起来。
+- 在内置工作流之间切换，无需重复下载或转写同一条录音。
+- 查看带来源引用的结果，编辑内容，并在确认当前结果后执行动作。
+- 通过 Courier 预览和提交通知，并获得可重试的投递和 Provider 状态回写。
+- 使用外部模型服务，或通过 Local Full 在本地完成处理。
+- 添加自己的 Scenario Pack、Processor 和第三方 Integration。
 
-| 档位 | 模型处理 | 通知出口 | 默认端口 |
-| --- | --- | --- | ---: |
-| External | HTTP ASR + HTTP Summary Processor | Courier，可选 | `8811` |
-| Local Full | 内嵌 Faster-Whisper + 内嵌 Qwen3-4B GGUF Worker | 默认关闭；可显式启用 Courier | `8815` |
+## 内置工作流
 
-两个档位共享同一套场景模型、Web UI 和 API，只在 Composition Root 选择不同的 Processor。生产入口不包含 Fixture Processor。
+| 工作流 | 适用场景 | 典型产出 |
+| --- | --- | --- |
+| Voice Inbox | 个人备忘和语音收件箱 | 分类、标签、任务和后续动作 |
+| Field Report | 现场走访和外勤工作 | 现场发现、严重度、跟进标记和建议 |
+| Meeting / Interview | 会议、访谈和对话 | 带来源引用的议题、决策和行动项 |
 
-## 内置可执行场景
+## 选择处理档位
 
-| Scenario Pack | 默认 Recording attribute | 产出 |
-| --- | ---: | --- |
-| Voice Inbox | `0` | 备忘分类、标签、任务和后续动作 |
-| Field Report | `1` | 现场发现、严重度、跟进标记和处置建议 |
-| Meeting / Interview | `2` | 带原文引用的议题、决策和行动项 |
+| 档位 | 处理方式 | 通知 | 适合 |
+| --- | --- | --- | --- |
+| External | 连接 HTTP ASR 和 Summary 服务 | Courier，可选 | 已有模型服务或共享部署 |
+| Local Full | 内嵌 Faster-Whisper 和 Qwen3-4B GGUF Worker | 默认关闭，可启用 | 本地或离线处理 |
 
-场景可以随时切换而不重新下载或转写。每次投影、编辑和审核都有 Revision；动作必须先生成预览，再由操作者显式确认执行。
+两个档位共用同一套 Web 界面和工作流模型，切换处理档位不会改变用户操作方式。
 
 ## 快速开始
+
+要求 Node.js `24.19.0` 或更新的 24.x 版本，并准备一个运行中的 Device Platform 实例。
 
 ```bash
 npm ci
@@ -37,9 +44,9 @@ npm run build
 npm run start:external
 ```
 
-要求 Node.js `24.19.0` 或更新的 24.x 版本。首次启动 External 且配置缺失时，打开 `http://127.0.0.1:8811`，在 Setup 页面配置 Device Platform、ASR、Summary 和可选 Courier。配置会先验证，再以权限 `0600` 原子写入。
+External 首次启动时，打开 `http://127.0.0.1:8811`，在 Setup 页面填写 Device Platform、ASR、Summary 和可选 Courier 配置。
 
-Local Full：
+Linux 运行 Local Full：
 
 ```bash
 cd studio
@@ -47,51 +54,57 @@ bash scripts/setup-local-linux.sh
 bash scripts/run-local-linux.sh
 ```
 
-Windows 使用 `scripts/setup-local-windows.ps1` 和 `scripts/run-local-windows.ps1`。安装器准备 Node、uv、FFmpeg、liblc3、固定 ASR 模型以及固定的 `Qwen/Qwen3-4B-GGUF@34778e…` Q4_K_M Summary 模型；模型安装后按大小和 SHA-256 校验。Local Full 最低基线为 8 GiB RAM、4 GiB Summary 模型可用磁盘，实际长录音建议 16 GiB RAM。
+Windows 使用 `scripts/setup-local-windows.ps1` 和 `scripts/run-local-windows.ps1`。安装器会准备本地音频工具和模型。
 
-Docker：
+Docker 用户可以选择任一档位：
 
 ```bash
 docker compose -f compose.external.yml up --build
 docker compose -f compose.local-full.yml up --build
 ```
 
-完整安装和运维说明见 [运行手册](studio/RUNBOOK.zh-CN.md)。架构、扩展点和边界见 [架构说明](docs/ARCHITECTURE.md)。
+## 让 AI 一键配置
 
-## 动作执行与多渠道
+将下面的 Prompt 复制给 ChatGPT、Codex、Claude 或其他 AI 编程/自动化助手，即可让它按录音工作流配置 Studio：
 
-Studio 固定使用 Courier 官方 Node SDK `@trycourier/courier@7.25.0`。Studio 只管理 Action Intent、发送预览、幂等提交和 Provider 状态同步；email、SMS、push、chat、inbox 的 Integration、Template、Routing、Preference、重试和日志由 Courier 管理。仓库不实现逐渠道 Transport 或 Adapter。
+```text
+你正在为当前环境配置 https://github.com/voicecan/voicecan-studio 中的 Voicecan Studio。
 
-执行前必须人工确认当前 Scenario Revision。默认 Payload 不包含音频、下载 URL 或完整 Transcript。Local Full 的 `NOTIFICATION_ENABLED=false` 为默认值；严格零外联环境仍可审核、预览和导出 Markdown。
+把用户当前请求作为配置或接入目标。执行前先读取并遵守仓库指导和相关扩展 Recipe：
 
-## 常用命令
+https://github.com/voicecan/voicecan-studio/blob/main/AGENTS.md
+https://github.com/voicecan/voicecan-studio/blob/main/studio/AGENTS.md
+https://github.com/voicecan/voicecan-studio/blob/main/studio/docs/ai-development/START-HERE.md
+https://github.com/voicecan/voicecan-studio/blob/main/studio/docs/ai-development/EXTENSION-CATALOG.md
+https://github.com/voicecan/voicecan-studio/tree/main/studio/docs/ai-development/recipes
 
-| 命令 | 用途 |
-| --- | --- |
-| `npm run dev:external` | External 开发入口 |
-| `npm run dev:local-full` | Local Full 开发入口 |
-| `npm run doctor` | CLI Doctor |
-| `npm run verify:sdk` | 校验审查过的 Device Platform SDK 制品 |
-| `npm run check:boundaries` | 检查协议运行时、Fixture 和渠道边界 |
-| `npm run check:architecture` | 检查 Capability 分层依赖 |
-| `npm run ci` | 完整构建和测试门禁 |
-| `npm run generate:scenario -- --name <id> --title <title>` | 生成并注册 Scenario Pack |
-| `npm run generate:processor -- --name <id> --kind asr\|summary` | 生成 Processor 骨架 |
-| `npm run generate:integration -- --name <id> --sdk <package>` | 生成官方 SDK Integration 骨架 |
-| `npm run generate:capability -- --name <id>` | 生成底层内部 Capability 骨架 |
-| `npm run context:ai -- --capability <id>` | 输出 AI 最小安全上下文 |
-| `npm run verify:change -- --capability <id>` | 定向验证改动 |
+如果需要接入 Device Platform，再读取 https://github.com/voicecan/device-platform/tree/main/skills 中相关的 Skills。
 
-## AI 添加或修改功能
+先检查环境和已有 Studio 进程。按照仓库指导处理档位选择、配置、测试数据、凭据、工作流验证和扩展范围。使用公开 Device Platform Contract，不要重复建设设备管理能力。
 
-先阅读 [studio/AGENTS.md](studio/AGENTS.md)、[AI Start Here](studio/docs/ai-development/START-HERE.md) 和 [Extension Catalog](studio/docs/ai-development/EXTENSION-CATALOG.md)。面向用户的首选扩展点是 Scenario Pack、Processor Stage 和 Integration；内部 Capability 只承载稳定事务边界。AI 不需要通读仓库，也不得读取 `.env`、真实 SQLite、音频、Transcript 或 Delivery Payload。
+不得读取或暴露 Secret、生产录音、音频、Transcript、Delivery Payload、私有协议源码或模型文件。外部网络变更、发送通知、修改保留策略、删除数据、创建凭据或修改已有部署前必须先询问确认。完成后报告档位、本地 URL、命令、检查结果、人工步骤、配置变更和回滚方案，不得包含 Secret 或用户内容。
+```
 
-## 安全边界
+## 隐私与动作安全
 
-- 只通过公开 `@voicecan/server-client` 使用 Device Platform；不访问私有协议运行时内部实现、Platform 数据库或对象存储凭证。
-- Application Token、Webhook Secret、Processor/Courier Key、临时 URL、音频和内容不写日志。
-- Download Grant 只在任务取得执行权且 Processor、音频工具、存储健康后创建。
-- 所有写 API 使用 Operator Token；浏览器仅把 Token 保存到当前 Session。
-- 默认监听 `127.0.0.1`。对公网部署前必须使用带认证的 TLS Ingress。
+Studio 不负责设备管理：设备身份、录音授权和下载由 Device Platform 提供。动作执行分为两步，先预览，再由操作者显式确认。默认 Action Payload 不包含音频、下载 URL 或完整 Transcript。
 
-安全问题请按 [SECURITY.md](SECURITY.md) 私下报告；普通问题见 [SUPPORT.md](SUPPORT.md)，参与开发见 [CONTRIBUTING.md](CONTRIBUTING.md)。第三方依赖与待确认授权见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+Local Full 默认关闭 Courier，因此本地环境可以在不发送通知的情况下完成审核、预览和 Markdown 导出。
+
+## 扩展 Studio
+
+推荐的扩展点包括：
+
+- **Scenario Pack**：增加新的用户工作流和结果格式。
+- **Processor Stage**：接入 ASR 或 Summary 服务。
+- **Integration**：接入受支持的第三方动作服务。
+
+详见[架构说明](docs/ARCHITECTURE.md)、[AI 开发入口](studio/docs/ai-development/START-HERE.md)和[运行手册](studio/RUNBOOK.zh-CN.md)。
+
+## 更多资料
+
+- [公开发布检查表](docs/PUBLIC_RELEASE_CHECKLIST.md)
+- [安全策略](SECURITY.md)
+- [支持](SUPPORT.md)
+- [参与贡献](CONTRIBUTING.md)
+- [第三方声明](THIRD_PARTY_NOTICES.md)

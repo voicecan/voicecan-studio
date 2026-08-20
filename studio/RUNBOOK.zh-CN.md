@@ -7,7 +7,7 @@
 | External | HTTP ASR + HTTP Summary | Courier，可选 | 8811 |
 | Local Full | 本地 Faster-Whisper + 本地 Qwen3-4B GGUF | 默认关闭，可显式启用 | 8815 |
 
-两个档位都必须连接真实 Voicecan Device Platform。生产入口不提供模拟 Platform、模拟录音或 Fixture Processor。
+两个档位都连接 Voicecan Device Platform；开发测试可使用仓库提供的测试工具。
 
 ## 2. External
 
@@ -61,7 +61,7 @@ cd D:\path\to\device-demo-app\studio
 
 不要提交 `.env`、运行时 JSON、SQLite、模型、音频或内容数据。配置文件只存于受限运行目录；浏览器仅在当前 Session 保存 Operator Token。
 
-## 5. 验收与诊断
+## 5. 运行检查
 
 ```bash
 cd /path/to/device-demo-app
@@ -70,7 +70,7 @@ npm run doctor
 npm run ci
 ```
 
-Web UI 的 Setup 区也可运行 Doctor。正式验收至少覆盖：
+Web UI 的 Setup 区也可运行 Doctor。日常运行检查建议覆盖：
 
 1. Device Platform 授权 Recording 能作为来源被刷新；
 2. 同一 Recording 只下载并转写一次；
@@ -88,11 +88,6 @@ Web UI 的 Setup 区也可运行 Doctor。正式验收至少覆盖：
 - 同一数据库目录只允许一个 Studio 进程；锁冲突会以 `STUDIO_RUNTIME_LOCKED` 拒绝启动。
 - Provider 返回结果未知时使用 Delivery 的 refresh/recover 操作，不要创建新的幂等键盲目重发。
 
-## 7. AI 扩展
+## 7. 开发扩展
 
-让 AI 修改功能时从 [docs/ai-development/START-HERE.md](docs/ai-development/START-HERE.md) 开始，优先通过 Scenario、Processor 或 Integration 生成器扩展；只有改变内部事务边界时才使用 Capability Catalog。
-
-```bash
-npm run context:ai -- --capability <name>
-npm run verify:change -- --capability <name>
-```
+需要扩展用户工作流时，优先使用 Scenario Pack、Processor Stage 或 Integration。开发说明见 [AI 开发入口](docs/ai-development/START-HERE.md)。

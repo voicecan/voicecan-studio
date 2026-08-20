@@ -2,34 +2,41 @@
 
 [中文](README.zh-CN.md)
 
-Voicecan Studio is an independently deployable and directly extensible example application built on Device Platform. This repository contains one demo application with two deployment profiles:
+Voicecan Studio is a self-hosted application for turning authorized Voicecan recordings into organized, reviewable work. It connects to [Voicecan Device Platform](https://github.com/voicecan/device-platform), processes each recording, presents the result in a simple web interface, and helps an operator decide what to do next.
 
 ```text
-Authorized Recording → Processor Stages → Traceable Artifacts → Scenario Pack → Human Review → Action Intent
+Recording → Transcript → Summary → Scenario result → Review → Action
 ```
 
-Device Platform owns devices, recordings, authorization, and downloads; Studio does not duplicate those management capabilities. Starting from an authorized Recording, Studio performs processing, scenario projection, human review, action preview, and Courier execution. Each Recording is downloaded and transcribed only once. An upstream Revision change makes downstream results stale and prevents execution.
+## What you can do
 
-## Deployment profiles
+- Process an authorized recording once and keep the transcript, summary, scenario result, review, and action linked together.
+- Switch between built-in workflows without downloading or transcribing the same recording again.
+- Review results with source references, edit them, and confirm an action only after the current result has been checked.
+- Preview and submit notifications through Courier with retry-safe delivery and provider status updates.
+- Run with cloud or self-managed processors, or keep processing local with the embedded Local Full profile.
+- Add your own Scenario Packs, processors, and third-party integrations.
 
-| Profile | Model processing | Notification output | Default port |
-| --- | --- | --- | ---: |
-| External | HTTP ASR + HTTP Summary Processor | Optional Courier | `8811` |
-| Local Full | Embedded Faster-Whisper + embedded Qwen3-4B GGUF Worker | Disabled by default; Courier can be enabled explicitly | `8815` |
+## Built-in workflows
 
-Both profiles share the same scenario model, Web UI, and API. They differ only in the Processor selected by the Composition Root. Production entrypoints never include Fixture Processors.
+| Workflow | Best for | Typical result |
+| --- | --- | --- |
+| Voice Inbox | Personal notes and incoming voice messages | Categories, tags, tasks, and follow-up actions |
+| Field Report | Site visits and field work | Findings, severity, follow-up flags, and recommendations |
+| Meeting / Interview | Conversations and interviews | Topics, decisions, and action items with source references |
 
-## Built-in executable scenarios
+## Choose a profile
 
-| Scenario Pack | Default Recording attribute | Output |
-| --- | ---: | --- |
-| Voice Inbox | `0` | Memo classification, tags, tasks, and follow-up actions |
-| Field Report | `1` | Field findings, severity, follow-up flags, and recommended actions |
-| Meeting / Interview | `2` | Topics, decisions, and action items with source references |
+| Profile | How processing works | Notifications | Best for |
+| --- | --- | --- | --- |
+| External | Connects to HTTP ASR and Summary services | Optional Courier | Existing model services or a shared deployment |
+| Local Full | Runs embedded Faster-Whisper and Qwen3-4B GGUF workers | Off by default; can be enabled | Local or offline processing |
 
-Scenarios can be switched at any time without downloading or transcribing the Recording again. Every projection, edit, and review has a Revision. Actions must first produce a preview and then be explicitly confirmed by an operator.
+Both profiles use the same web interface and workflow model. You can change the profile without changing the user-facing workflow.
 
-## Quickstart
+## Quick start
+
+Requirements: Node.js `24.19.0` or a newer 24.x release, plus a running Device Platform instance.
 
 ```bash
 npm ci
@@ -37,9 +44,9 @@ npm run build
 npm run start:external
 ```
 
-Node.js `24.19.0` or a newer 24.x release is required. When External starts without configuration for the first time, open `http://127.0.0.1:8811` and configure Device Platform, ASR, Summary, and optional Courier on the Setup page. Configuration is validated before being written atomically with `0600` permissions.
+On the first External start, open `http://127.0.0.1:8811` and enter the Device Platform, ASR, Summary, and optional Courier settings in the Setup page.
 
-Local Full on Linux:
+To run Local Full on Linux:
 
 ```bash
 cd studio
@@ -47,51 +54,57 @@ bash scripts/setup-local-linux.sh
 bash scripts/run-local-linux.sh
 ```
 
-On Windows, use `scripts/setup-local-windows.ps1` and `scripts/run-local-windows.ps1`. The installer prepares Node, uv, FFmpeg, liblc3, a pinned ASR model, and the pinned `Qwen/Qwen3-4B-GGUF@34778e…` Q4_K_M Summary model. Installed models are verified by size and SHA-256. Local Full requires at least 8 GiB RAM and 4 GiB of available disk space for the Summary model; 16 GiB RAM is recommended for long recordings.
+On Windows, use `scripts/setup-local-windows.ps1` and `scripts/run-local-windows.ps1`. The installer prepares the local audio tools and models for you.
 
-Docker:
+Docker users can start either profile with:
 
 ```bash
 docker compose -f compose.external.yml up --build
 docker compose -f compose.local-full.yml up --build
 ```
 
-See the [operations runbook](studio/RUNBOOK.zh-CN.md) for complete installation and operations guidance. See the [architecture guide](docs/ARCHITECTURE.md) for architecture, extension points, and boundaries.
+## One-prompt AI setup
 
-## Action execution and multiple channels
+Copy the prompt below into your AI coding or automation assistant to set up Studio for a recording workflow:
 
-Studio uses the official Courier Node SDK, `@trycourier/courier@7.25.0`. Studio manages only Action Intents, delivery previews, idempotent submission, and Provider status synchronization. Courier owns email, SMS, push, chat, and inbox Integrations, Templates, Routing, Preferences, retries, and logs. This repository does not implement per-channel Transports or Adapters.
+```text
+You are setting up Voicecan Studio from https://github.com/voicecan/voicecan-studio in the current environment.
 
-The current Scenario Revision must be confirmed by a human before execution. Default Payloads do not contain audio, download URLs, or full Transcripts. Local Full defaults to `NOTIFICATION_ENABLED=false`; strictly offline environments can still review, preview, and export Markdown.
+Use the current user request as the setup or integration goal. Before acting, read and follow the repository guidance and the relevant extension recipe:
 
-## Common commands
+https://github.com/voicecan/voicecan-studio/blob/main/AGENTS.md
+https://github.com/voicecan/voicecan-studio/blob/main/studio/AGENTS.md
+https://github.com/voicecan/voicecan-studio/blob/main/studio/docs/ai-development/START-HERE.md
+https://github.com/voicecan/voicecan-studio/blob/main/studio/docs/ai-development/EXTENSION-CATALOG.md
+https://github.com/voicecan/voicecan-studio/tree/main/studio/docs/ai-development/recipes
 
-| Command | Purpose |
-| --- | --- |
-| `npm run dev:external` | External development entrypoint |
-| `npm run dev:local-full` | Local Full development entrypoint |
-| `npm run doctor` | CLI Doctor |
-| `npm run verify:sdk` | Verify reviewed Device Platform SDK artifacts |
-| `npm run check:boundaries` | Check protocol-runtime, Fixture, and channel boundaries |
-| `npm run check:architecture` | Check Capability-layer dependencies |
-| `npm run ci` | Run the complete build and test gate |
-| `npm run generate:scenario -- --name <id> --title <title>` | Generate and register a Scenario Pack |
-| `npm run generate:processor -- --name <id> --kind asr\|summary` | Generate a Processor skeleton |
-| `npm run generate:integration -- --name <id> --sdk <package>` | Generate an official-SDK Integration skeleton |
-| `npm run generate:capability -- --name <id>` | Generate an internal Capability skeleton |
-| `npm run context:ai -- --capability <id>` | Print the minimum safe AI context |
-| `npm run verify:change -- --capability <id>` | Verify a targeted change |
+If Device Platform access is needed, also read the relevant Skills in https://github.com/voicecan/device-platform/tree/main/skills.
 
-## Adding or changing features with AI
+Inspect the environment and any existing Studio process first. Follow the repository guidance for profile selection, configuration, test data, credentials, workflow verification, and extension scope. Use the public Device Platform contracts and do not duplicate device management.
 
-Start with [studio/AGENTS.md](studio/AGENTS.md), [AI Start Here](studio/docs/ai-development/START-HERE.md), and the [Extension Catalog](studio/docs/ai-development/EXTENSION-CATALOG.md). Scenario Packs, Processor Stages, and Integrations are the preferred user-facing extension points; internal Capabilities exist only for stable transaction boundaries. An AI agent does not need to read the entire repository and must not read `.env`, real SQLite databases, audio, Transcripts, or Delivery Payloads.
+Never read or expose secrets, production recordings, audio, transcripts, delivery payloads, private protocol sources, or model files. Ask before external network changes, sending notifications, changing retention, deleting data, creating credentials, or modifying an existing deployment. At the end, report the profile, local URL, commands, checks, manual steps, configuration changes, and rollback plan without secrets or user content.
+```
 
-## Security boundaries
+## Privacy and action safety
 
-- Use Device Platform only through the public `@voicecan/server-client`; do not access protocol-runtime internals, Platform databases, or object-storage credentials.
-- Never log Application Tokens, Webhook Secrets, Processor/Courier Keys, temporary URLs, audio, or content.
-- Create a Download Grant only after a task owns execution and its Processor, audio tools, and storage are healthy.
-- All write APIs require an Operator Token; the browser stores it only in the current Session.
-- The default listener is `127.0.0.1`. Use an authenticated TLS Ingress before exposing Studio publicly.
+Studio keeps the recording workflow separate from device management: Device Platform remains the source of device identity, recording authorization, and downloads. Action execution is a two-step flow—preview first, then explicit operator confirmation. Default action payloads do not include audio, download URLs, or full transcripts.
 
-Report security issues privately through [SECURITY.md](SECURITY.md). See [SUPPORT.md](SUPPORT.md) for general help and [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidance. Third-party dependencies and pending license confirmations are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Local Full keeps Courier disabled by default, so you can review, preview, and export Markdown in a local environment without sending notifications.
+
+## Extend Studio
+
+The preferred extension points are:
+
+- **Scenario Packs** for new user workflows and result formats.
+- **Processor Stages** for ASR or summary providers.
+- **Integrations** for supported third-party action services.
+
+See the [architecture guide](docs/ARCHITECTURE.md), [AI development guide](studio/docs/ai-development/START-HERE.md), and [operations runbook](studio/RUNBOOK.zh-CN.md).
+
+## More information
+
+- [Public release checklist](docs/PUBLIC_RELEASE_CHECKLIST.md)
+- [Security policy](SECURITY.md)
+- [Support](SUPPORT.md)
+- [Contributing](CONTRIBUTING.md)
+- [Third-party notices](THIRD_PARTY_NOTICES.md)
