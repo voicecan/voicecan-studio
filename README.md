@@ -10,8 +10,6 @@ Authorized Recording → Processor Stages → Traceable Artifacts → Scenario P
 
 Device Platform owns devices, recordings, authorization, and downloads; Studio does not duplicate those management capabilities. Starting from an authorized Recording, Studio performs processing, scenario projection, human review, action preview, and Courier execution. Each Recording is downloaded and transcribed only once. An upstream Revision change makes downstream results stale and prevents execution.
 
-> Status: first public release candidate. Before the official public release, complete the [public release checklist](docs/PUBLIC_RELEASE_CHECKLIST.md), especially the repository license and license files for both Voicecan SDK artifacts.
-
 ## Deployment profiles
 
 | Profile | Model processing | Notification output | Default port |

@@ -10,8 +10,6 @@ Authorized Recording → Processor Stages → Traceable Artifacts → Scenario P
 
 Device Platform 负责设备、录音、授权和下载；Studio 不重复建设这些管理能力。Studio 从授权 Recording 开始，完成处理、场景投影、人工审核、动作预览和 Courier 执行。一条 Recording 只下载和转写一次；上游 Revision 变化会让下游结果失效并阻止执行。
 
-> 当前状态：首次公开发布候选。正式公开前必须完成 [公开发布检查表](docs/PUBLIC_RELEASE_CHECKLIST.md)，尤其是补充仓库许可证及两个 Voicecan SDK 制品的许可证文件。
-
 ## 两种发行档位
 
 | 档位 | 模型处理 | 通知出口 | 默认端口 |
