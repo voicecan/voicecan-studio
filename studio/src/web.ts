@@ -5,7 +5,8 @@ import { stat } from 'node:fs/promises';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { StudioService } from './service.js';
 import type { StudioRuntime } from './runtime.js';
-import { STUDIO_PAGE } from './studio-page.js';
+import { renderStudioPage } from './studio-page.js';
+import { studioLocale } from './studio-i18n.js';
 import { capabilityRegistry } from './capabilities/index.js';
 
 async function streamAudio(request: IncomingMessage, response: ServerResponse, file: { path: string; contentType: string; filename: string }): Promise<void> {
@@ -51,7 +52,7 @@ export function createStudioServer(input: {
   };
   return createHttpServer(async ({ request, response, url }) => {
     try {
-      if (request.method === 'GET' && url.pathname === '/') return sendText(response, 200, STUDIO_PAGE, 'text/html; charset=utf-8');
+      if (request.method === 'GET' && url.pathname === '/') return sendText(response, 200, renderStudioPage(studioLocale(url.searchParams.get('lang'))), 'text/html; charset=utf-8');
       if (request.method === 'GET' && url.pathname === '/livez') return sendJson(response, 200, { ok: true });
       if (request.method === 'GET' && url.pathname === '/healthz') {
         const health = input.healthDiagnostics ? await input.healthDiagnostics() : { ok: true };

@@ -2,6 +2,8 @@
 
 [English](README.md)
 
+Studio 界面支持英文和简体中文，首次访问默认英文。通过顶部语言选择器切换，浏览器会记住选择；也可使用 `?lang=en` 或 `?lang=zh-CN` 链接指定语言。界面语言不会翻译录音原文或模型生成内容。
+
 Voicecan Studio 是一个自托管语音工作流应用：把经过授权的 Voicecan 录音转换为结构化结果，交给人工审核，并帮助操作者安全地执行后续动作。它连接 [Voicecan Device Platform](https://github.com/voicecan/device-platform)，提供简单的 Web 界面和两种处理档位。
 
 ```text

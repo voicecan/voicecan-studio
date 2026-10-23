@@ -2,6 +2,8 @@
 
 [中文](README.zh-CN.md)
 
+The Studio UI supports English and Simplified Chinese. English is the default. Use the language selector in the header to switch languages; the browser remembers your choice. Direct links may specify `?lang=en` or `?lang=zh-CN`. UI language does not translate recording transcripts or generated content.
+
 Voicecan Studio is a self-hosted application for turning authorized Voicecan recordings into organized, reviewable work. It connects to [Voicecan Device Platform](https://github.com/voicecan/device-platform), processes each recording, presents the result in a simple web interface, and helps an operator decide what to do next.
 
 ```text

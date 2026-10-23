@@ -1,15 +1,19 @@
-# Voicecan Studio 应用
+# Voicecan Studio
 
-本目录包含仓库中的 Voicecan Studio 应用。它从 Device Platform 获取授权录音，完成转写、摘要、场景整理、人工审核和动作预览。
+[简体中文](README.zh-CN.md)
 
-Voicecan Studio 提供两个处理档位：
+This directory contains the Voicecan Studio application. It reads authorized recordings from Device Platform and turns them into transcripts, summaries, scenario results, reviews, and action previews.
 
-- **External**：使用 HTTP ASR 和 Summary 服务，Courier 通知可选。
-- **Local Full**：使用内嵌 Faster-Whisper 和 Qwen3-4B GGUF Worker，Courier 默认关闭。
+It provides two processing profiles:
 
-完整安装与运维步骤见 [RUNBOOK.zh-CN.md](RUNBOOK.zh-CN.md)，产品能力介绍见 [仓库 README](../README.md)。
+- **External** uses HTTP ASR and Summary services, with optional Courier notifications.
+- **Local Full** uses embedded Faster-Whisper and Qwen3-4B GGUF workers, with Courier disabled by default.
 
-## 开发
+See the [repository README](../README.md) for product capabilities and [RUNBOOK.zh-CN.md](RUNBOOK.zh-CN.md) for installation and operations.
+
+The web interface defaults to English. Use the language selector in the header to switch between English and Simplified Chinese; your browser remembers the choice. Transcripts and generated content remain in their original language.
+
+## Development
 
 ```bash
 cd ..
@@ -17,7 +21,7 @@ npm ci
 npm run build
 npm run test
 npm run dev:external
-# 或 npm run dev:local-full
+# or npm run dev:local-full
 ```
 
-需要扩展用户工作流时，优先使用 Scenario Pack、Processor Stage 和 Integration。开发说明见 [AI 开发入口](docs/ai-development/START-HERE.md)。
+Use Scenario Packs, Processor Stages, and Integrations when extending user-facing workflows. See [AI development](docs/ai-development/START-HERE.md) for contributor guidance.

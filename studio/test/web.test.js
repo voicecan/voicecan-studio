@@ -27,7 +27,7 @@ test('Local Full exposes list sync status and an immediate synchronization actio
   context.after(() => new Promise((resolve) => server.close(resolve)));
   const origin = await listen(server);
 
-  const page = await (await fetch(origin)).text();
+  const page = await (await fetch(`${origin}/?lang=zh-CN`)).text();
   assert.match(page, /id="sync"/);
   assert.match(page, /搜索录音、场景或内容/);
   assert.match(page, /const playbackPositions=new Map/);
